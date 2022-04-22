@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<!-- TargetFrameworks follow OSDP.Net -->
+		<TargetFrameworks>net6.0;netstandard2.0</TargetFrameworks>
+		<ImplicitUsings>disable</ImplicitUsings>
+		<Nullable>disable</Nullable>
+		<LangVersion>10</LangVersion>
+
+		<Authors>Fredrik Hall</Authors>
+		<Company>Halls Byrå AB</Company>
+		<PackageTags>OSDP;OSDP.Net;SerialPortStream;SerialPort;serial;connection</PackageTags>
+		<Description>Plugin to OSDP.Net with an IOsdpConnection implementation based on the open source SerialPortStream instead of the built-in SerialPort.</Description>
+		<PackageProjectUrl>https://github.com/hallsbyra/OSDP.Net.SerialPortStreamOsdpConnection</PackageProjectUrl>
+		<RepositoryUrl>https://github.com/hallsbyra/OSDP.Net.SerialPortStreamOsdpConnection</RepositoryUrl>
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+		<Copyright>Copyright © $(Company) $([System.DateTime]::Now.Year)</Copyright>
+	</PropertyGroup>
+	<ItemGroup>
+	  <PackageReference Include="MinVer" Version="3.1.0">
+	    <PrivateAssets>all</PrivateAssets>
+	    <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+	  </PackageReference>
+	  <PackageReference Include="OSDP.Net" Version="2.1.6" />
+	  <PackageReference Include="SerialPortStream" Version="2.4.0" />
+	</ItemGroup>
+</Project>
