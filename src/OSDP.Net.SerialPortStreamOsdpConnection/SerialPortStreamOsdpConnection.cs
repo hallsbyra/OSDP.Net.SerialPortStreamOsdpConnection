@@ -32,7 +32,16 @@ namespace OSDP.Net.Connections
 
         public async Task<int> ReadAsync(byte[] buffer, CancellationToken token)
         {
-            return await serialPort.ReadAsync(buffer, 0, buffer.Length, token);
+            serialPort.ReadTimeout = 100;
+            while(true)
+            {
+                // SerialPortStream ignores the passed CancellationToken. However, the ReadTimeout parameter
+                // seems to work, so we use it in a loop to simulate real cancellation.
+                var count = await serialPort.ReadAsync(buffer, 0, buffer.Length, token);
+                if(count > 0)
+                    return count;
+                token.ThrowIfCancellationRequested();
+            }
         }
 
         public async Task WriteAsync(byte[] buffer)
