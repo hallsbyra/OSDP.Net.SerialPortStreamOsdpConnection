@@ -10,6 +10,7 @@ namespace OSDP.Net.Connections
     {
         readonly SerialPortStream serialPort;
         readonly ILogger logger;
+        bool isOpen = false;
 
         public SerialPortStreamOsdpConnection(string portName, int baudRate, ILogger logger = null)
         {
@@ -22,25 +23,30 @@ namespace OSDP.Net.Connections
 
         public int BaudRate => serialPort.BaudRate;
 
-        public bool IsOpen => serialPort.IsOpen;
+        // Keep track of the open state ourselves. The SerialPortStream.IsOpen can return false e.g.
+        // after an error has occurred. Then OSDP.Net expects to be able to call Open(), but SerialPortStream
+        // throws exception saying "Port is already open".
+        public bool IsOpen => isOpen;
 
         public TimeSpan ReplyTimeout { get; set; } = TimeSpan.FromMilliseconds(200);
 
         public void Close()
         {
-            logger?.LogDebug("SerialPortStreamOsdpConnection.Close() Port: {0}", serialPort.PortName);
+            logger?.LogDebug("SerialPortStreamOsdpConnection.Close() Port: {Port}", serialPort.PortName);
             serialPort.Close();
+            isOpen = false;
         }
 
         public void Open()
         {
-            logger?.LogDebug("SerialPortStreamOsdpConnection.Open() Port: {0}", serialPort.PortName);
+            logger?.LogDebug("SerialPortStreamOsdpConnection.Open() Port: {Port}", serialPort.PortName);
             serialPort.Open();
+            isOpen = true;
         }
 
         public async Task<int> ReadAsync(byte[] buffer, CancellationToken token)
         {
-            logger?.LogDebug("SerialPortStreamOsdpConnection.ReadAsync() Port: {0}", serialPort.PortName);
+            logger?.LogDebug("SerialPortStreamOsdpConnection.ReadAsync() Port: {Port}", serialPort.PortName);
             while (true)
             {
                 // SerialPortStream ignores the passed CancellationToken. However, the ReadTimeout parameter
@@ -48,17 +54,17 @@ namespace OSDP.Net.Connections
                 var count = await serialPort.ReadAsync(buffer, 0, buffer.Length, token);
                 if (count > 0)
                 {
-                    logger?.LogDebug("SerialPortStreamOsdpConnection.ReadAsync() Port: {0}, Count: {1}", serialPort.PortName, count);
+                    logger?.LogDebug("SerialPortStreamOsdpConnection.ReadAsync() Port: {Port}, Bytes: {ByteCount}", serialPort.PortName, count);
                     return count;                    
                 }
-                logger?.LogDebug("SerialPortStreamOsdpConnection.ReadAsync() Port: {0} - Timed out", serialPort.PortName);
+                logger?.LogDebug("SerialPortStreamOsdpConnection.ReadAsync() Port: {Port} - Timed out, retrying.", serialPort.PortName);
                 token.ThrowIfCancellationRequested();
             }
         }
 
         public async Task WriteAsync(byte[] buffer)
         {
-            logger?.LogDebug("SerialPortStreamOsdpConnection.WriteAsync({0} bytes) Port: {1}", buffer.Length, serialPort.PortName);
+            logger?.LogDebug("SerialPortStreamOsdpConnection.WriteAsync({ByteCount} bytes) Port: {Port}", buffer.Length, serialPort.PortName);
             await serialPort.WriteAsync(buffer, 0, buffer.Length);
         }
     }
